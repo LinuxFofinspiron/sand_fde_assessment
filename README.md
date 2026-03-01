@@ -1,5 +1,5 @@
 # SandTech Forward Deployed Engineer Role Assessment
-This Repository contains docker files and codes for the Sandtech FDE Role Recruitment Assessment for Sierra Leone by Mohamed Fofanah
+This entails source code and setup/run instructions for the Sandtech FDE Role Recruitment Assessment for Sierra Leone by Mohamed Fofanah
 
 
 # Quarterly Health Bulletin Dashboard
