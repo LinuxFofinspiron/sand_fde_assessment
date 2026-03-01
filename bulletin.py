@@ -283,4 +283,4 @@ def update_dashboard(selected_quarter, selected_province, selected_facility):
 # Run app
 # -----------------------------
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False, port=1997, host='0.0.0.0')
