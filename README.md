@@ -1,5 +1,5 @@
 # SandTech Forward Deployed Engineer Role Assessment
-This entails source code and setup/run instructions for the Sandtech FDE Role Recruitment Assessment for Sierra Leone by Mohamed Fofanah
+This entails source code as well as setup & run instructions for the Sandtech FDE Role Recruitment Assessment for Sierra Leone by Mohamed Fofanah.
 
 
 # Quarterly Health Bulletin Dashboard
@@ -87,8 +87,9 @@ Open this URL in your web browser to interact with the dashboard.
 ## 📝 Features
 
 * **Interactive Filters**: Year-Quarter, Province, Facility
+* **KPI Count Cards**: Total Facilities Reporting, Facilities Practicing Kangaroo Care, Facilities with High Reporting Completeness, Total Yearly Live Births, Total Yearly Premature Deaths
 * **Top 10 Bar Chart**: Facility ranking by deliveries
-* **Trend Line Chart**: Total deliveries over the last 4 quarters
+* **Trend Line Charts**: Total deliveries over the last 4 quarters, Quaterly Total Live Births
 * **KPI Table**: Displays deliveries, reporting completeness, QoQ change
 * **Missing KPIs Note**: Clearly indicates KPIs not included
 
@@ -121,10 +122,12 @@ quarterly-health-bulletin/
 
 ## 🧾 Future Enhancements
 * Fully fledged ETL pipeline with job scheduling using Crontab or Apache Airflow
+* Integration with other Health Care Data Sources like Commcare
+* Utilize Sandtech products
 * Leverage a traditional RDBMS or Big Data as the system scales
 * Add **downloadable Excel/PDF** export for automated bulletin generation.
 * Include additional KPIs when the dataset is updated (ANC visits, maternal complications, reporting timeliness).
-* Dockerize Build
 * Utilize Apache Superset or Metabase for Dashboard
+* Dockerize Build
 
 `Author: Ing. Mohamed Fofanah`

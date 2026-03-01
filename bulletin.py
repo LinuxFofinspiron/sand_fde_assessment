@@ -97,6 +97,20 @@ else:
 # -----------------------------
 df = pd.read_csv("./processed/dhis2_flat.csv")
 
+# Total number of unique facilities
+total_facilities = df['facility_id'].nunique()
+
+# Total number of facilities practicing kangaroo care
+kangaroo_care_facilities = df[df['kangaroo_care_practiced'] == 'Yes']['facility_id'].nunique()
+
+# Number of facilities with at least 90% HMIS reporting completeness
+high_reporting_completeness = df[df['hmis_reporting_completeness'].str.rstrip('%').astype(float) >= 90]['facility_id'].nunique()
+
+# Total yearly live births
+total_live_births_year = df['live_births'].sum()
+
+# Total yearly premature deaths
+total_premature_deaths_year = df['death_prematurity'].sum()
 
 # -----------------------------
 # Compute Top 10 Facilities by Total Deliveries per Quarter
@@ -153,6 +167,7 @@ app.layout = html.Div([
     html.H1("Quarterly Health Bulletin for Ministry of Health", style={'textAlign':'center', 'color':'#2c3e50'}),
     
     # html.Hr(style={'borderColor':'#2c3e50'}),
+    
         
     # Filters
     html.Div([
@@ -189,11 +204,49 @@ app.layout = html.Div([
      
     # html.Hr(style={'borderColor':'#2c3e50'}),   
     
+    html.Br(),
+    
+    # Cards
+    # Total number of facilities card
+    html.Div([
+        html.H3("Total Facilities Reporting", style={'color':'#2980b9'}),
+        html.P(f"{total_facilities}", style={'fontSize':'24px', 'fontWeight':'bold'})
+    ], style={'width':'30%', 'display':'inline-block', 'border':'1px solid #2c3e50', 'padding':'10px', 'borderRadius':'5px', 'backgroundColor':'#ecf0f1', 'textAlign':'center', 'marginRight':'10px'}),
+    
+    # Number of facilities practicing kangaroo care card
+    html.Div([
+        html.H3("Facilities Practicing Kangaroo Care", style={'color':'#27ae60'}),
+        html.P(f"{kangaroo_care_facilities}", style={'fontSize':'24px', 'fontWeight':'bold'})
+    ], style={'width':'30%', 'display':'inline-block', 'border':'1px solid #2c3e50', 'padding':'10px', 'borderRadius':'5px', 'backgroundColor':'#ecf0f1', 'textAlign':'center', 'marginRight':'10px'}),
+    
+    # Number of facilities with at least 90% HMIS reporting completeness card
+    html.Div([
+        html.H3("Facilities with High Reporting Completeness", style={'color':'#f39c12'}),
+        html.P(f"{high_reporting_completeness}", style={'fontSize':'24px', 'fontWeight':'bold'})
+    ], style={'width':'30%', 'display':'inline-block', 'border':'1px solid #2c3e50', 'padding':'10px', 'borderRadius':'5px', 'backgroundColor':'#ecf0f1', 'textAlign':'center', 'marginRight':'10px'}),
+    
+    html.Br(),
+    
+    # Total Yearly live births card
+    html.Div([
+        html.H3("Total Yearly Live Births", style={'color':'#8e44ad'}),
+        html.P(f"{total_live_births_year}", style={'fontSize':'24px', 'fontWeight':'bold'})
+    ], style={'width':'45%', 'display':'inline-block', 'border':'1px solid #2c3e50', 'padding':'10px', 'borderRadius':'5px', 'backgroundColor':'#ecf0f1', 'textAlign':'center', 'marginRight':'10px'}),
+    
+    # Total Yearly premature deaths card
+    html.Div([
+        html.H3("Total Yearly Premature Deaths", style={'color':'#c0392b'}),
+        html.P(f"{total_premature_deaths_year}", style={'fontSize':'24px', 'fontWeight':'bold'})
+    ], style={'width':'45%', 'display':'inline-block', 'border':'1px solid #2c3e50', 'padding':'10px', 'borderRadius':'5px', 'backgroundColor':'#ecf0f1', 'textAlign':'center'}),
+    
     # Top 10 Bar Chart
     dcc.Graph(id='top10-bar-chart'),
 
     # Trend Line Chart
     dcc.Graph(id='deliveries-trend-line'),
+    
+    # Quaterly live births trend line chart
+    dcc.Graph(id='live-births-trend-line'),
 
     # KPI Table
     dash_table.DataTable(
@@ -227,6 +280,7 @@ app.layout = html.Div([
 @app.callback(
     [Output('top10-bar-chart', 'figure'),
      Output('deliveries-trend-line', 'figure'),
+     Output('live-births-trend-line', 'figure'),
      Output('kpi-table', 'data')],
     [Input('quarter-dropdown', 'value'),
      Input('province-dropdown', 'value'),
@@ -234,12 +288,15 @@ app.layout = html.Div([
 )
 def update_dashboard(selected_quarter, selected_province, selected_facility):
     filtered = top10_facilities[top10_facilities['year_quarter']==selected_quarter]
+    filtLive_births = df
     
     if selected_province:
         filtered = filtered[filtered['province']==selected_province]
+        filtLive_births = filtLive_births[filtLive_births['province']==selected_province]
     
     if selected_facility:
         filtered = filtered[filtered['facility_name']==selected_facility]
+        filtLive_births = filtLive_births[filtLive_births['facility_name']==selected_facility]
 
     # Top 10 Bar Chart
     bar_fig = px.bar(
@@ -254,6 +311,7 @@ def update_dashboard(selected_quarter, selected_province, selected_facility):
     )
     bar_fig.update_layout(xaxis_tickangle=-45)
 
+    
     # Trend Line Chart - last 4 quarters
     last_4_quarters = sorted(top10_facilities['year_quarter'].unique())[-4:]
     trend_filtered = top10_facilities[top10_facilities['year_quarter'].isin(last_4_quarters)]
@@ -263,7 +321,7 @@ def update_dashboard(selected_quarter, selected_province, selected_facility):
     if selected_facility:
         trend_filtered = trend_filtered[trend_filtered['facility_name']==selected_facility]
 
-    trend_fig = px.line(
+    deliveries_trend_fig = px.line(
         trend_filtered,
         x='year_quarter',
         y='total_deliveries_qtr',
@@ -272,15 +330,30 @@ def update_dashboard(selected_quarter, selected_province, selected_facility):
         labels={'year_quarter':'Year-Quarter','total_deliveries_qtr':'Total Deliveries','facility_name':'Facility'},
         title=f"Total Deliveries Trend - Last 4 Quarters"
     )
-    trend_fig.update_layout(xaxis_tickangle=-45)
+    deliveries_trend_fig.update_layout(xaxis_tickangle=-45)
+    
+    # Quaterly live births trend line chart
+    live_births_trend = (
+        filtLive_births.groupby('year_quarter', as_index=False)
+          .agg(total_live_births_qtr=('live_births', 'sum'))
+    )
+    live_births_trend_fig = px.line(
+        live_births_trend,
+        x='year_quarter',
+        y='total_live_births_qtr',
+        markers=True,
+        labels={'year_quarter':'Year-Quarter','total_live_births_qtr':'Total Live Births'},
+        title=f"Total Live Births Trend - Last 4 Quarters"
+    )
+    live_births_trend_fig.update_layout(xaxis_tickangle=-45)
 
     # Table data
     table_data = filtered.to_dict('records')
     
-    return bar_fig, trend_fig, table_data
+    return bar_fig, deliveries_trend_fig, live_births_trend_fig, table_data
 
 # -----------------------------
 # Run app
 # -----------------------------
 if __name__ == '__main__':
-    app.run(debug=False, port=1997, host='0.0.0.0')
+    app.run(debug=True, port=1997, host='0.0.0.0')
