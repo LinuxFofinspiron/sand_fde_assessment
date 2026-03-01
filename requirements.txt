@@ -1,0 +1,10 @@
+# gdown for downloading files from Google Drive
+gdown
+# Dash for dashboard
+dash
+# Pandas for data manipulation
+pandas
+# Plotly for interactive visualizations
+plotly
+# Flask for web framework
+flask
