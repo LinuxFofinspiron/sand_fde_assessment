@@ -127,6 +127,9 @@ quarterly_deliveries['facility_rank'] = (
 
 top10_facilities = quarterly_deliveries[quarterly_deliveries['facility_rank'] <= 10].sort_values(['year_quarter', 'facility_rank'])
 
+# print(top10_facilities)
+
+
 # -----------------------------
 # Facility performance (reporting completeness)
 # -----------------------------
@@ -174,8 +177,8 @@ app.layout = html.Div([
         html.Label("Select Year-Quarter:"),
         dcc.Dropdown(
             id='quarter-dropdown',
-            options=[{'label': q, 'value': q} for q in sorted(top10_facilities['year_quarter'].unique())],
-            value=sorted(top10_facilities['year_quarter'].unique())[-1]
+            options=[{'label': q, 'value': q} for q in sorted(df['year_quarter'].unique())],
+            value=sorted(df['year_quarter'].unique())[-1]
         ),
     ], style={'width':'30%', 'margin':'10px', 'display':'inline-block'}),
     
@@ -183,7 +186,7 @@ app.layout = html.Div([
         html.Label("Select Province:"),
         dcc.Dropdown(
             id='province-dropdown',
-            options=[{'label': p, 'value': p} for p in sorted(top10_facilities['province'].unique())],
+            options=[{'label': p, 'value': p} for p in sorted(df['province'].unique())],
             value=None,
             placeholder="All Provinces",
         ),
@@ -193,7 +196,7 @@ app.layout = html.Div([
         html.Label("Select Facility:"),
         dcc.Dropdown(
             id='facility-dropdown',
-            options=[{'label': f, 'value': f} for f in sorted(top10_facilities['facility_name'].unique())],
+            options=[{'label': f, 'value': f} for f in sorted(df['facility_name'].unique())],
             value=None,
             placeholder="All Facilities"
         ),
